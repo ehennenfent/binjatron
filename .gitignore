@@ -40,3 +40,5 @@ nosetests.xml
 .ropeproject
 
 .DS_Store
+
+sync.sh

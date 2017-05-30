@@ -1,6 +1,6 @@
 # binjatron
 
-Binary Ninja plugin for [Voltron](https://github.com/snare/voltron) integration.
+Experimental fork of the Binary Ninja plugin for [Voltron](https://github.com/snare/voltron) integration.
 
 Features:
 
@@ -21,7 +21,7 @@ Support:
 
 Binjatron requires [Voltron](https://github.com/snare/voltron), which is a framework to talk to various debuggers (GDB, LLDB, WinDbg and VDB) and build common UI views for them. Firstly, Voltron must be installed and working with your debugger of choice. An install script is provided that covers most use cases for GDB/LLDB on macOS and Linux, and [manual installation instructions](https://github.com/snare/voltron/wiki/Installation) are provided for other cases.
 
-Voltron must also be installed into the same Python version that Binary Ninja is using, which will depend on which platform you are on. This may or may not be the same Python version that your debugger is using. On macOS, for example, BN uses the system's default version of Python 2.7, and so does LLDB, so installing using Voltron's `install.sh` is sufficient. There's more information [here](https://github.com/snare/voltron/wiki/Installation) that may be useful in determining into which Python version you should be installing Voltron. 
+Voltron must also be installed into the same Python version that Binary Ninja is using, which will depend on which platform you are on. This may or may not be the same Python version that your debugger is using. On macOS, for example, BN uses the system's default version of Python 2.7, and so does LLDB, so installing using Voltron's `install.sh` is sufficient. There's more information [here](https://github.com/snare/voltron/wiki/Installation) that may be useful in determining into which Python version you should be installing Voltron.
 
 Windows/WinDbg users will need to follow the [manual install instructions](https://github.com/snare/voltron/wiki/Installation) to install Voltron and get it working with WinDbg. They'll also need to install Voltron into BN's embedded Python installation.
 
