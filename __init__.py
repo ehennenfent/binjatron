@@ -11,13 +11,14 @@ Documentation here: https://github.com/snare/binja/blob/master/README.md
 Note: requires the current version of Voltron from GitHub here:
 https://github.com/snare/voltron
 """
-
+from __future__ import print_function
 from binaryninja import *
 import voltron
 from threading import Thread
 from voltron.core import Client
 from voltron.plugin import api_request
 from scruffy import ConfigFile, PackageFile
+import pprint as pp
 
 log = voltron.setup_logging()
 client = Client()
@@ -35,7 +36,6 @@ config.load()
 bp_colour = enums.HighlightStandardColor(config.bp_colour)
 pc_colour = enums.HighlightStandardColor(config.pc_colour)
 no_colour = enums.HighlightStandardColor(0)
-
 
 def sync(view):
     global syncing, vers, notification
@@ -101,10 +101,13 @@ def sync(view):
             vers = client.perform_request("version")
             client.start(build_requests=build_requests, callback=callback)
             syncing = True
+            return syncing
         except:
-            log_alert("Couldn't connect to Voltron")
+            log_info("Couldn't connect to Voltron")
+            return False
     else:
-        log_alert("Already synchronising with Voltron")
+        log_info("Already synchronising with Voltron")
+        return syncing
 
 
 def stop(view):
@@ -246,6 +249,20 @@ def continue_exec(_view):
 def backtrace(_view):
     _matched_command("bt")
 
+def get_registers(_view):
+    res = client.perform_request("registers", block=False, deref=True)
+    if(res.is_error):
+        log_error("Could not get registers!" + " -- " + res.message)
+        return None
+    return res.registers
+
+def get_memory(_view, address, length):
+    res = client.perform_request("memory", block=False, address=address, length=length)
+    if(res.is_error):
+        log_error("Could not get memory at address " + str(address) + " -- " + res.message)
+        return None
+    return res.memory
+
 def set_slide(view, address):
     global slide
 
@@ -301,5 +318,5 @@ PluginCommand.register("Voltron: Sync", "", sync)
 PluginCommand.register("Voltron: Stop syncing", "", stop)
 PluginCommand.register_for_address("Voltron: Breakpoint set", "", set_breakpoint)
 PluginCommand.register_for_address("Voltron: Breakpoint clear", "", delete_breakpoint)
-PluginCommand.register_for_address("Voltron: Slide set", "", set_slide)
-PluginCommand.register("Voltron: Slide clear", "", clear_slide)
+# PluginCommand.register_for_address("Voltron: Slide set", "", set_slide)
+# PluginCommand.register("Voltron: Slide clear", "", clear_slide)
