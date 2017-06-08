@@ -210,7 +210,7 @@ def delete_breakpoint(view, address):
     except:
         log_alert("Failed to delete breakpoint")
 
-def _matched_command(cmmd):
+def _matched_command(_command):
     global vers
 
     try:
@@ -218,7 +218,7 @@ def _matched_command(cmmd):
             vers = client.perform_request("version")
 
         if 'lldb' in vers.host_version or 'gdb' in vers.host_version:
-            cmd = cmmd
+            cmd = _command
         else:
             raise Exception("Debugger host version {} not supported".format(vers.host_version))
 
@@ -229,7 +229,7 @@ def _matched_command(cmmd):
         # update the voltron views
         res = client.perform_request("command", command="voltron update", block=False)
     except:
-        log_alert(cmd + " Failed")
+        log_alert(_command + " Failed")
 
 def run_binary(_view):
     _matched_command("run")
@@ -262,6 +262,13 @@ def get_memory(_view, address, length):
         log_error("Could not get memory at address " + str(address) + " -- " + res.message)
         return None
     return res.memory
+
+def get_backtrace(_view):
+    res = client.perform_request("backtrace", block=False)
+    if(res.is_error):
+        log_error("Could not get backtrace -- " + res.message)
+        return None
+    return res.frames
 
 def set_slide(view, address):
     global slide
