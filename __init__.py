@@ -30,6 +30,8 @@ vers = None
 slide = 0
 notification = None
 
+sync_callbacks = []
+
 config = ConfigFile('~/.binjatron.conf', defaults=PackageFile('defaults.yaml'), apply_env=True, env_prefix='BTRON')
 config.load()
 
@@ -53,7 +55,7 @@ def sync(view):
         ]
 
     def callback(results=[], error=None):
-        global last_bp_addrs, last_pc_addr, last_pc_addr_colour
+        global last_bp_addrs, last_pc_addr, last_pc_addr_colour, sync_callbacks
 
         if error:
             log_error("Error synchronising: {}".format(error))
@@ -97,6 +99,9 @@ def sync(view):
 
                     # update the highlight colour to show the current PC
                     func.set_auto_instr_highlight(addr, pc_colour)
+                    for cb in sync_callbacks:
+                        cb(results)
+                    sync_callbacks = []
 
     if not syncing:
         try:
@@ -279,6 +284,10 @@ def get_backtrace(_view):
         return None
     return res.frames
 
+def register_next_sync_callback(cb):
+    global sync_callbacks
+    sync_callbacks.append(cb)
+
 def set_slide(view, address):
     global slide
 
@@ -298,7 +307,6 @@ def set_slide(view, address):
     # if we have an async debugger, we can update now. otherwise we'll have to wait for the user to step again
     if 'async' in vers.capabilities:
         client.update()
-
 
 def clear_slide(view):
     global slide
