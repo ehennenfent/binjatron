@@ -37,7 +37,7 @@ bp_colour = enums.HighlightStandardColor(config.bp_colour)
 pc_colour = enums.HighlightStandardColor(config.pc_colour)
 no_colour = enums.HighlightStandardColor(0)
 
-def get_function(view, address):
+def _get_function(view, address):
     func = view.get_function_at(address)
     if func is None:
         return view.get_function_at(view.get_previous_function_start_before(address))
@@ -64,13 +64,13 @@ def sync(view):
 
                     # add colours to all the breakpoints currently set in the debugger
                     for addr in addrs:
-                        func = get_function(view, addr)
+                        func = _get_function(view, addr)
                         if func:
                             func.set_auto_instr_highlight(addr, bp_colour)
 
                     # remove colours from any addresses that had breakpoints the last time we updated, but don't now
                     for addr in set(last_bp_addrs) - set(addrs):
-                        func = get_function(view, addr)
+                        func = _get_function(view, addr)
                         if func:
                             func.set_auto_instr_highlight(addr, no_colour)
 
@@ -85,11 +85,11 @@ def sync(view):
                         log_error("Could not sync with Voltron! Consider restarting lldb/gdb")
                         return
                     # find the function where that address is
-                    func = get_function(view, addr)
+                    func = _get_function(view, addr)
 
                     if last_pc_addr:
                         # update the highlight colour of the previous PC to its saved value
-                        func.set_auto_instr_highlight(last_pc_addr, last_pc_addr_colour)
+                        _get_function(view, last_pc_addr).set_auto_instr_highlight(last_pc_addr, last_pc_addr_colour)
 
                     # save the PC and current colour for that instruction
                     last_pc_addr_colour = func.get_instr_highlight(addr)
@@ -127,11 +127,11 @@ def stop(view):
 
         # clear any colours we've set
         if last_pc_addr:
-            func = get_function(view, last_pc_addr)
+            func = _get_function(view, last_pc_addr)
             func.set_auto_instr_highlight(last_pc_addr, last_pc_addr_colour)
 
         for addr in last_bp_addrs:
-            func = get_function(view, addr)
+            func = _get_function(view, addr)
             func.set_auto_instr_highlight(addr, no_colour)
 
         # stop the voltron client
@@ -172,7 +172,7 @@ def set_breakpoint(view, address):
         res = client.perform_request("command", command="voltron update", block=False)
 
         # add colour in binja
-        func = get_function(view, address)
+        func = _get_function(view, address)
         if func:
             func.set_auto_instr_highlight(address, bp_colour)
     except:
@@ -213,7 +213,7 @@ def delete_breakpoint(view, address):
         res = client.perform_request("command", command="voltron update", block=False)
 
         # remove the breakpoint colour in binja
-        func = get_function(view, address)
+        func = _get_function(view, address)
         if func:
             func.set_auto_instr_highlight(address, no_colour)
     except:
