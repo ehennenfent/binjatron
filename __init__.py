@@ -278,7 +278,13 @@ def get_memory(_view, address, length):
     return res.memory
 
 def get_backtrace(_view):
-    res = client.perform_request("backtrace", block=False)
+    try:
+        res = client.perform_request("backtrace", block=False)
+    except:
+        import traceback
+        traceback.print_exc()
+        log_error("Voltron encountered an exception while getting the backtrace. Maybe this is a stripped binary?")
+        return [{'index': 0, 'addr': 0, 'name': 'Exception! Voltron Bug?'}]
     if(res.is_error):
         log_error("Could not get backtrace -- " + res.message)
         return None
