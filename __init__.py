@@ -29,6 +29,7 @@ syncing = False
 vers = None
 slide = 0
 notification = None
+mute_errors = False
 
 sync_callbacks = []
 
@@ -55,11 +56,16 @@ def sync(view):
         ]
 
     def callback(results=[], error=None):
-        global last_bp_addrs, last_pc_addr, last_pc_addr_colour, sync_callbacks
+        global last_bp_addrs, last_pc_addr, last_pc_addr_colour, sync_callbacks, mute_errors
 
         if error:
-            log_error("Error synchronising: {}".format(error))
+            if not mute_errors:
+                log_error("Error synchronising: {}".format(error))
+                if 'Max retries exceeded' in error:
+                    log_alert("Voltron seems to have closed. Muting errors until succesful sync is restored.")
+                    mute_errors = True
         else:
+            mute_errors = False
             if client and len(results):
                 if results[1].breakpoints:
                     addrs = [l['address'] - slide for s in [bp['locations'] for bp in results[1].breakpoints] for l in s]
@@ -260,15 +266,15 @@ def step_out(_view):
 def continue_exec(_view):
     _matched_command("continue")
 
-def backtrace(_view):
-    _matched_command("bt")
-
 def get_registers(_view):
     res = client.perform_request("registers", block=False, deref=True)
     if(res.is_error):
         log_error("Could not get registers!" + " -- " + res.message)
-        return None
+        return None, res.message
     return res.registers, res.deref
+
+def set_tty(_view, tty):
+    _matched_command("tty " + tty)
 
 def get_memory(_view, address, length):
     res = client.perform_request("memory", block=False, address=address, length=length)
