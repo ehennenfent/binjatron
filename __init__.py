@@ -127,9 +127,6 @@ def sync(view):
 
                     # update the highlight colour to show the current PC
                     func.set_auto_instr_highlight(addr, pc_colour)
-                    for cb in sync_callbacks:
-                        cb(results)
-                    sync_callbacks = []
 
                     # Run sync callbacks and remove them from the list if specified
                     for cb, _ in sync_callbacks:
